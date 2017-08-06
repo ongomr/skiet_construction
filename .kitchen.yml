@@ -1,0 +1,40 @@
+---
+driver:
+  name: vagrant
+
+provisioner:
+  name: chef_zero
+  require_chef_omnibus: true
+  chef_omnibus_url: file:///mnt/data_bags/scripts/install.sh
+  environments_path: /Users/ongomr/DevOps/chef/envs
+  roles_path: /Users/ongomr/DevOps/chef/roles
+
+platforms:
+  - name: xenial-server
+    driver:
+      customize:
+       memory: 2048
+       cpus: 2
+      box: xenial-server
+      box_url: /Users/ongomr/DevOps/vagrant/boxes/xenial-server.box
+      network:
+      - ["private_network", {ip: "192.168.56.88"}]
+      synced_folders:
+      - ["/Users/ongomr/DevOps/chef/data_bags/sandbox/", "/mnt/data_bags", "disabled: false"]
+
+# Allocation Range started at IP: 192.168.56.90
+suites:
+  - name: skiet_construction
+    environment: lab
+    driver:
+      vm_hostname: skietsrv
+      customize:
+       memory: 6144
+       cpus: 2
+      network:
+      - ["private_network", {ip: "192.168.56.90"}]
+    run_list:
+      - recipe[skiet_construction]
+    excludes:
+      - centos
+    attributes:
