@@ -1,0 +1,35 @@
+# GlassFish on Docker with Debian Jessie and OpenJDK
+FROM debian:jessie
+
+# Maintainer
+MAINTAINER Robert Ongom<RobertOngom@gmail.com>
+
+# Set environment variables and default password for user 'admin'
+ENV GLASSFISH_PKG=glassfish-4.1.1.zip \
+    GLASSFISH_URL=http://download.oracle.com/glassfish/4.1.1/release/glassfish-4.1.1.zip \
+    GLASSFISH_HOME=/usr/local/glassfish4 \
+    MD5=4e7ce65489347960e9797d2161e0ada2 \
+    PATH=$PATH:/usr/local/glassfish4/bin \
+    JAVA_HOME=/usr/lib/jvm/java-openjdk
+
+# Install packages, download and extract GlassFish
+# Setup password file
+# Enable DAS
+RUN apt-get update && apt-get install curl unzip openjdk-8-jdk && \
+    curl -O $GLASSFISH_URL && \
+    echo "$MD5 *$GLASSFISH_PKG" | md5sum -c - && \
+    unzip -o $GLASSFISH_PKG -d $GLASSFISH_HOME && \
+    rm -f $GLASSFISH_PKG && \
+    yum -y remove unzip && \
+    yum clean all
+
+COPY docker-entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+
+# Ports being exposed
+EXPOSE 4848 8080 8181
+
+VOLUME  ["/usr/local/glassfish4"]
+
+# Start asadmin console and the domain
+CMD ["asadmin", "start-domain", "-v"]
